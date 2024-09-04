@@ -1,28 +1,109 @@
 import re
+import time
 import requests
 import secrets
 from config import Config
 
+bearer_token = None
+token_expiration_time = 0
+token_valid_time = 60 * 60
 
 def make_api_call(data):
-    return get_bearer_token()
+    get_bearer_token()
+    print(bearer_token)
+    return enrollment_status(588070)
+
+
+def enrollment_status(lesson_id):
+    get_bearer_token()
+
+    url = f"https://schalter.asvz.ch/tn-api/api/Lessons/{lesson_id}/MyEnrollment"
+    headers = {"Authorization": f"Bearer {bearer_token}"}
+
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return f'Failed to get enrollment status: {response.status_code}, {response.text}'
+
+
+def enroll_in_lesson(lesson_id):
+    get_bearer_token()
+
+    url = f"https://schalter.asvz.ch/tn-api/api/Lessons/{lesson_id}/Enrollment"
+    headers = {"Authorization": f"Bearer {bearer_token}"}
+
+    response = requests.post(url, headers=headers)
+
+    if response.status_code == 201:
+        return response.json()
+    else:
+        return f'Failed to enroll: {response.status_code}, {response.text}'
+    
+
+def unenroll_from_lesson(lesson_id):
+    get_bearer_token()
+
+    url = f"https://schalter.asvz.ch/tn-api/api/Lessons/{lesson_id}/Enrollment"
+    headers = {"Authorization": f"Bearer {bearer_token}"}
+
+    response = requests.delete(url, headers=headers)
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return f'Failed to unenroll: {response.status_code}, {response.text}'
+
+
+def get_lessons(sport_id):
+    url = f"https://asvz.ch/asvz_api/event_search?_format=json&limit=60&f[0]=sport:{sport_id}"
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return f'Failed to get lessons: {response.status_code}, {response.text}'
+
+
+def get_lesson(lesson_id):
+    url = f"https://schalter.asvz.ch/tn-api/api/Lessons/{lesson_id}"
+    response = requests.get(url)
+
+    return response.json()
 
 
 def get_bearer_token():
-    url = "https://auth.asvz.ch/Account/Login"
-    response = requests.get(url)
+    global bearer_token, token_expiration_time
 
-    requestVerificationToken = extract_request_verification_token(response.text)
-    antiForgeryCookieName, antiForgeryCookieToken = extract_anti_forgery_token(response.cookies)
+    if not is_token_valid():
+        url = "https://auth.asvz.ch/Account/Login"
+        response = requests.get(url)
+        
+        if response.status_code != 200:
+            raise Exception("Failed to get login page")
 
-    data, headers = prepare_login_request(requestVerificationToken, antiForgeryCookieName, antiForgeryCookieToken)
+        requestVerificationToken = extract_request_verification_token(response.text)
+        antiForgeryCookieName, antiForgeryCookieToken = extract_anti_forgery_token(response.cookies)
+
+        data, headers = prepare_login_request(requestVerificationToken, antiForgeryCookieName, antiForgeryCookieToken)
+        new_token = login(data, headers, antiForgeryCookieName, antiForgeryCookieToken)
+
+        token_expiration_time = time.time() + token_valid_time
+        bearer_token = new_token
     
-    return login(data, headers, antiForgeryCookieName, antiForgeryCookieToken)
+    return bearer_token
 
+
+def is_token_valid():
+    return bearer_token is not None and time.time() < token_expiration_time
+    
 
 def login(data, headers, antiForgeryCookieName, antiForgeryCookieToken):
     url = "https://auth.asvz.ch/Account/Login"
     response = requests.post(url, data=data, headers=headers, allow_redirects=False)
+    if response.status_code != 302:
+        raise Exception("Failed to login")
 
     idscrvSessionCookieName, idscrvSessionCookieToken = extract_idscrv_session_cookie(response.cookies)
     identityApplicationCookieName, identityApplicationCookieToken = extract_identity_application_cookie(response.cookies)
@@ -38,21 +119,23 @@ def authorize(headers):
 
     url = f"https://auth.asvz.ch/connect/authorize?client_id=55776bff-ef75-4c9d-9bdd-45e883ec38e0&redirect_uri=https%3A%2F%2Fschalter.asvz.ch%2Ftn%2Fassets%2Foidc-login-redirect.html&response_type=id_token%20token&scope=openid%20profile%20tn-api%20tn-apiext%20tn-auth%20tn-hangfire&state={state}&nonce={nonce}"
     response = requests.get(url, headers=headers, allow_redirects=False)
+    if response.status_code != 302:
+        raise Exception("Failed to authorize")
 
     location = response.headers["Location"]
-    id_token = extract_id_token(location)
+    access_token = extract_access_token(location)
 
-    return id_token
+    return access_token
 
 
-def extract_id_token(location):
-    match = re.search(r'id_token=([^&]+)', location)
+def extract_access_token(location):
+    match = re.search(r'access_token=([^&]+)', location)
     
     if match:
-        id_token = match.group(1)
-        return id_token
+        access_token = match.group(1)
+        return access_token
     else:
-        raise Exception("id_token not found")
+        raise Exception("access_token not found")
 
 
 def prepare_authorize_request(idscrvSessionCookieName, idscrvSessionCookieToken, identityApplicationCookieName, identityApplicationCookieToken, antiForgeryCookieName, antiForgeryCookieToken):
