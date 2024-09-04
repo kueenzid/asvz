@@ -1,0 +1,2 @@
+ASVZID = "595343"
+PASSWORD = "he5Xqsl8PqQfXx5zKuj3"
