@@ -4,12 +4,17 @@ from app.services.enrollment_bot import success
 from app.services.enrollment_bot import failure
 
 from app.services.enrollment_bot import enroll
+from app.services.api_client import get_bearer_token
 
 scheduler = BackgroundScheduler()
+refreshTokenScheduler = BackgroundScheduler()
+
 
 def schedule_enrollment(lesson_id, date):
-    date = date - timedelta(seconds=1)
+    date = date - timedelta(seconds=0.6)
     scheduler.add_job(enroll, 'date', run_date=date, args=[lesson_id], id=str(lesson_id))
+    date = date + timedelta(seconds=30)
+    refreshTokenScheduler.add_job(get_bearer_token, 'date', run_date=date, id="refresh_token_for_" + str(lesson_id))
 
 def remove_job(job_id):
     scheduler.remove_job(job_id)

@@ -79,31 +79,33 @@
             tbody.appendChild(row);
           } else {
             enrollments.forEach(course => {
-            const row = document.createElement('tr');
-            const courseTitleCell = document.createElement('td');
-            const courseLink = document.createElement('a');
-            courseLink.href = createLinkToASVZ(course.lessonId);
-            courseLink.textContent = course.lessonName;
-            courseTitleCell.appendChild(courseLink);
-            row.appendChild(courseTitleCell);
+              const row = document.createElement('tr');
+              const courseTitleCell = document.createElement('td');
+              const courseLink = document.createElement('a');
+              courseLink.href = createLinkToASVZ(course.lessonId);
+              courseLink.textContent = course.lessonName;
+              courseLink.target = "_blank";
+              courseLink.rel = "noopener noreferrer";
+              courseTitleCell.appendChild(courseLink);
+              row.appendChild(courseTitleCell);
 
-            const timeCell = document.createElement('td');
-            timeCell.textContent = fromToDateFormat(course.lessonStart, course.lessonEnd);
-            row.appendChild(timeCell);
+              const timeCell = document.createElement('td');
+              timeCell.textContent = fromToDateFormat(course.lessonStart, course.lessonEnd);
+              row.appendChild(timeCell);
 
-            const locationCell = document.createElement('td');
-            locationCell.textContent = course.location;
-            row.appendChild(locationCell);
+              const locationCell = document.createElement('td');
+              locationCell.textContent = course.location;
+              row.appendChild(locationCell);
 
-            const courseIdCell = document.createElement('td');
-            courseIdCell.textContent = course.lessonId;
-            row.appendChild(courseIdCell);
+              const courseIdCell = document.createElement('td');
+              courseIdCell.textContent = course.lessonId;
+              row.appendChild(courseIdCell);
 
-            const enrollmentStatusCell = document.createElement('td');
-            enrollmentStatusCell.textContent = course.status;
-            row.appendChild(enrollmentStatusCell);
+              const enrollmentStatusCell = document.createElement('td');
+              enrollmentStatusCell.textContent = course.status;
+              row.appendChild(enrollmentStatusCell);
 
-            tbody.appendChild(row);
+              tbody.appendChild(row);
           });
           }
         });

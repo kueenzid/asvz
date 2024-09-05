@@ -89,7 +89,7 @@ def get_scheduled_courses():
         response = api_client.get_lesson(job.id)
         if response.status_code == 200:
             data = response.json()['data']
-            course = {"lessonId": data['eventId'], "lessonName": data['title'], "lessonStart": data['starts'], "lessonEnd": data['ends'], 'location': data['facilities'][0]['name'], "status": "Sheduled"}
+            course = {"lessonId": data['id'], "lessonName": data['title'], "lessonStart": data['starts'], "lessonEnd": data['ends'], 'location': data['facilities'][0]['name'], "status": "Sheduled"}
             courses.append(course)
     
     return courses
