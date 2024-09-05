@@ -3,7 +3,6 @@ from app.services import api_client
 def enroll(lesson_id):
     try:
         response = api_client.enroll_in_lesson(lesson_id)
-        inspect_response(response)
         if response.status_code == 201:
             return True
         else:
@@ -14,7 +13,6 @@ def enroll(lesson_id):
 def unenroll(lesson_id):
     try:
         response = api_client.unenroll_from_lesson(lesson_id)
-        inspect_response(response)
         if response.status_code == 200:
             return True
         else:

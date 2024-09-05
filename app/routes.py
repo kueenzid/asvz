@@ -45,8 +45,8 @@ def get_lesson(id):
 
 @bp.app_context_processor
 def inject_user_status():
-    user_data = asvz_service.me()
-    if user_data:
-        return {'logged_in': True, 'username': user_data['firstName']}
+    userName = asvz_service.me()
+    if userName:
+        return {'logged_in': True, 'username': userName}
     else:
         return {'logged_in': False, 'username': None}
