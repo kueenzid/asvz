@@ -19,6 +19,17 @@ def get_personal_data():
     return response
 
 
+def my_enrollments():
+    get_bearer_token()
+
+    url = "https://schalter.asvz.ch/tn-api/api/Enrollments"
+    headers = {"Authorization": f"Bearer {bearer_token}"}
+
+    response = requests.get(url, headers=headers)
+
+    return response
+
+
 def enrollment_status(lesson_id):
     get_bearer_token()
 
@@ -48,13 +59,6 @@ def unenroll_from_lesson(lesson_id):
     headers = {"Authorization": f"Bearer {bearer_token}"}
 
     response = requests.delete(url, headers=headers)
-
-    return response
-
-
-def get_lessons(sport_id):
-    url = f"https://asvz.ch/asvz_api/event_search?_format=json&limit=60&f[0]=sport:{sport_id}"
-    response = requests.get(url)
 
     return response
 

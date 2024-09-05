@@ -7,6 +7,7 @@ bp = Blueprint('main', __name__)
 def index():
     return render_template('index.html')
 
+# TODO: Implement the login route
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -15,33 +16,39 @@ def login():
 
 @bp.route('/enroll/<int:id>')
 def enroll(id):
-    response = asvz_service.enroll(id)
-    if response:
-        return "Success", 200
+    status, message = asvz_service.enroll(id)
+    if status:
+        return message, 200
     else:
-        return "Failure", 500
+        return message, 500
     
 @bp.route('/unenroll/<int:id>')
 def unenroll(id):
-    response = asvz_service.unenroll(id)
-    if response:
-        return "Success", 200
+    status, message = asvz_service.unenroll(id)
+    if status:
+        return message, 200
     else:
-        return "Failure", 500
+        return message, 500
     
 @bp.route('/my_enrollment/<int:id>')
 def my_enrollment(id):
     return asvz_service.enrollment(id)
 
-
 @bp.route('/enrollments')
 def enrollments():
     return render_template('enrollments.html')
 
+@bp.route('/get_enrollments')
+def get_enrollments():
+    return asvz_service.get_enrollments()
+
+@bp.route('/get_sheduled_enrollments')
+def get_sheduled_enrollments():
+    return asvz_service.get_summary()
+
 @bp.route('/get_lesson/<int:id>')
 def get_lesson(id):
     return asvz_service.lesson(id)
-
 
 @bp.app_context_processor
 def inject_user_status():
