@@ -18,7 +18,7 @@ def get_jobs():
     return scheduler.get_jobs()
 
 def get_summary():
-    return {"schduled": scheduler.get_jobs(), "success": success, "failure": failure}
+    return {"scheduled": [str(job.id) for job in get_jobs()], "success": success, "failure": failure}
 
 def check_already_scheduled(lesson_id):
     jobs = get_jobs()

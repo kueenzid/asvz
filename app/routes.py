@@ -38,12 +38,16 @@ def my_enrollment(id):
 def enrollments():
     return render_template('enrollments.html')
 
+@bp.route('/scheduler')
+def scheduler():
+    return render_template('scheduler.html')
+
 @bp.route('/get_enrollments')
 def get_enrollments():
     return asvz_service.get_enrollments()
 
-@bp.route('/get_sheduler_summary')
-def get_sheduler_summary():
+@bp.route('/get_scheduler_summary')
+def get_scheduler_summary():
     return asvz_service.get_summary()
 
 @bp.route('/get_scheduled_courses')

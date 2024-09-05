@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h1>Scheduler Summary</h1>
+            <div>
+                <h3>Scheduled</h3>
+                <p id="scheduled"></p>
+                <h3>failure:</h3>
+                <p id="failure"></p>
+                <h3>Success:</h3>
+                <p id="success"></p>
+            </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const response = await fetch('/get_scheduler_summary');
+            const data = await response.json();
+
+            if (data.scheduled !== undefined){
+                document.getElementById('scheduled').innerText = data.scheduled.length;
+            }
+            if (data.failure !== undefined){
+                document.getElementById('failure').innerText = data.failure.length;
+            }
+            if (data.success !== undefined){
+                document.getElementById('success').innerText = data.success.length;
+            }
+        });
+    </script>
+{% endblock %}
