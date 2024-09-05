@@ -42,9 +42,13 @@ def enrollments():
 def get_enrollments():
     return asvz_service.get_enrollments()
 
-@bp.route('/get_sheduled_enrollments')
-def get_sheduled_enrollments():
+@bp.route('/get_sheduler_summary')
+def get_sheduler_summary():
     return asvz_service.get_summary()
+
+@bp.route('/get_scheduled_courses')
+def get_sheduled_courses():
+    return asvz_service.get_scheduled_courses()
 
 @bp.route('/get_lesson/<int:id>')
 def get_lesson(id):

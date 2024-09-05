@@ -10,6 +10,8 @@ def enroll(lesson_id):
         elif response.status_code == 422:
             error_message = response.json()['errors'][0]['message']
             if error_message == "Der Anmeldebeginn liegt in der Zukunft - eine Anmeldung ist leider noch nicht möglich!":
+                if enrollment_scheduler.check_already_scheduled(lesson_id):
+                    return True, "Already Scheduled"
                 response = api_client.get_lesson(lesson_id)
                 enrollmentDateTime = response.json()['data']['enrollmentFrom']
                 enrollment_scheduler.schedule_enrollment(lesson_id, parser.parse(enrollmentDateTime))
@@ -52,7 +54,7 @@ def enrollment(lesson_id):
                 case x:
                     return "Unknown Code " + str(x), 500
         elif response.status_code == 404:
-            return "Not Found", 500
+            return "Not Found", 404
     except Exception as e:
         return "Error " + str(e), 500
         
@@ -79,6 +81,18 @@ def get_enrollments():
     
 def get_summary():
     return enrollment_scheduler.get_summary()
+
+def get_scheduled_courses():
+    jobs = enrollment_scheduler.get_jobs()
+    courses = []
+    for job in jobs:
+        response = api_client.get_lesson(job.id)
+        if response.status_code == 200:
+            data = response.json()['data']
+            course = {"lessonId": data['eventId'], "lessonName": data['title'], "lessonStart": data['starts'], "lessonEnd": data['ends'], 'location': data['facilities'][0]['name'], "status": "Sheduled"}
+            courses.append(course)
+    
+    return courses
 
 
 def inspect_response(response):

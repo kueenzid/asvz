@@ -60,15 +60,17 @@
 {% block scripts %}
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
-          const response = await fetch('/get_enrollments')
-          const enrollments = await response.json()
-
           const placeholderRows = document.querySelectorAll('.placeholder-row');
           placeholderRows.forEach(row => row.remove());
 
+          let enrollments = await getEnrolledCourses();
+          const scheduledCourses = await getSchedueldCourses();
+
+          enrollments = enrollments.concat(scheduledCourses);
+
           const tbody = document.getElementById('courses-tbody');
 
-          if (enrollments.length === 0) {
+          if (enrollments.length === 0 && scheduledCourses.length === 0) {
             const row = document.createElement('tr');
             const cell = document.createElement('td');
             cell.colSpan = 5;
@@ -105,6 +107,16 @@
           });
           }
         });
+
+        const getEnrolledCourses = async () => {
+          const response = await fetch('/get_enrollments')
+          return await response.json()
+        }
+
+        const getSchedueldCourses = async () => {
+          const response = await fetch('/get_scheduled_courses')
+          return await response.json()
+        }
 
         const createLinkToASVZ = (courseId) => {
           return `https://schalter.asvz.ch/tn/lessons/${courseId}`;
