@@ -1,30 +1,209 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Flask App</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-    <h1>Welcome to My Flask App</h1>
-    <button id="api-call-btn">Make API Call</button>
-    <div id="response"></div>
+{% extends 'base.html' %}
+
+{% block title %}Home Page{% endblock %}
+
+{% block content %}
+    <h1 class="text-center">Enroll into course</h1>
+    <input class="form-control" id="courseInput" placeholder="Enter course ID/Link">
+    <div id="course" class="container course-info" style="display: none;">
+        <h1 class="text-center"><span id="courseTitle"></span><span id="enrolledBadge" class="badge text-bg-success" style="display: none;">Enrolled</span></h1>
+        <div class="row">
+            <div class="col-md-6">
+                <p><span class="info-label">Time:</span> <span id="time"></span></p>
+            </div>
+            <div class="col-md-6">
+                <p><span class="info-label">Enrollment From:</span> <span id="enrollmentFrom"></span></p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <p><span class="info-label">Facility:</span> <span id="facilitiesName"></span></p>
+            </div>
+            <div class="col-md-6">
+                <p><span class="info-label">Rooms:</span> <span id="rooms"></span></p>
+            </div>
+        </div>
+        <div class="row" id="enrollButtonRow">
+            <div class="col-md-12 text-center">
+                <button id="enrollButton" class="btn btn-primary">Enroll into Course</button>
+            </div>
+        </div>
+        <div class="row" id="unenrollButtonRow">
+            <div class="col-md-12 text-center">
+                <button id="unenrollButton" class="btn btn-danger">Unenroll from Course</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        document.getElementById('api-call-btn').addEventListener('click', () => {
-            fetch('/api_call', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ key: 'value' })
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('response').innerText = JSON.stringify(data);
-            });
+        const dateFormatOptions = { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+        const dateFormatLocation = 'en-GB';
+        let currentCourseId = null;
+        let currentEnrollmentStatus = null;
+
+        document.getElementById('courseInput').addEventListener('input', async () => {
+            const inputValue = document.getElementById('courseInput').value;
+            const courseData = await validateCourseInput(inputValue);
+            
+            
+            if (courseData) {
+                await updateEnrollStatus();
+
+                document.getElementById('course').style.display = 'block';
+                
+                document.getElementById('courseTitle').innerText = courseData.data.title + " ";
+                document.getElementById('time').innerText = new Date(courseData.data.starts).toLocaleString(dateFormatLocation, dateFormatOptions) + ' - ' + new Date(courseData.data.ends).toLocaleString(dateFormatLocation, { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('enrollmentFrom').innerText = new Date(courseData.data.enrollmentFrom).toLocaleString(dateFormatLocation, dateFormatOptions);
+                document.getElementById('facilitiesName').innerText = courseData.data.facilities.map(facility => facility.name).join(', ');
+                document.getElementById('rooms').innerText = courseData.data.rooms.join(', ');
+            } else {
+                document.getElementById('course').style.display = 'none';
+            }
         });
+
+        document.getElementById('enrollButton').addEventListener('click', async () => {
+            if (currentCourseId) {
+                const enrolled = await enrollIntoCourse(currentCourseId);
+                if (enrolled) {
+                    await updateEnrollStatus();
+                    alert('Successfully enrolled into the course!');
+                } else {
+                    alert('Failed to enroll. Please try again later.');
+                }
+            }
+        });
+
+        document.getElementById('unenrollButton').addEventListener('click', async () => {
+            if (currentCourseId) {
+                const unenrolled = await unenrollFromCourse(currentCourseId);
+                if (unenrolled) {
+                    await updateEnrollStatus();
+                    alert('Successfully unenrolled from the course!');
+                } else {
+                    alert('Failed to unenroll. Please try again later.');
+                }
+            }
+        });
+
+        const updateEnrollStatus = async () => {
+            const enrollmentStatus = await getEnrollmentStatus(currentCourseId);
+                currentEnrollmentStatus = enrollmentStatus;
+                if (currentEnrollmentStatus == "4 - definitiv") {
+                    document.getElementById('enrollButtonRow').style.display = 'none';
+                    document.getElementById('unenrollButtonRow').style.display = 'block';
+                    document.getElementById('enrolledBadge').style.display = 'inline';
+                } else {
+                    document.getElementById('unenrollButtonRow').style.display = 'none';
+                    document.getElementById('enrollButtonRow').style.display = 'block';
+                    document.getElementById('enrolledBadge').style.display = 'none';
+                }
+        };
+
+        const unenrollFromCourse = async (courseId) => {
+            const url = `/unenroll/${courseId}`;
+            
+            try {
+                const response = await fetch(url);
+
+                console.log(response);
+
+                if (response.status != 200) {
+                    return false;
+                }
+
+                return true;
+            } catch (error) {
+                console.error('Error unenrolling from course:', error);
+                return false;
+            }
+        };
+
+        const getEnrollmentStatus = async (courseId) => {
+            const url = `/my_enrollment/${courseId}`;
+            
+            try {
+                const response = await fetch(url);
+                
+                if (response.status === 404) {
+                    return false;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
+                }
+
+                const data = await response.text();
+                return data;
+
+            } catch (error) {
+                console.error('Error fetching enrollment status:', error);
+                return false;
+            }
+        }
+
+        const enrollIntoCourse = async (courseId) => {
+            const url = `/enroll/${courseId}`;
+            
+            try {
+                const response = await fetch(url);
+
+                console.log(response);
+
+                if (response.status != 200) {
+                    return false;
+                }
+
+                return true;
+            } catch (error) {
+                console.error('Error enrolling into course:', error);
+                return false;
+            }
+        };
+
+        validateCourseInput = async (inputValue) => {
+            const courseInput = document.getElementById('courseInput');
+            if (inputValue == "") {
+                courseInput.classList.remove('is-valid');
+                courseInput.classList.remove('is-invalid');
+                return false;
+            }
+            const re = /.*(\d{6})$/;
+            const match = inputValue.match(re);
+            if (match) {
+                lesson = await getLesson(match[1]);
+                if (lesson) {
+                    courseInput.classList.remove('is-invalid');
+                    courseInput.classList.add('is-valid');
+                    currentCourseId = match[1];
+                    return lesson;
+                }
+            }
+            courseInput.classList.remove('is-valid');
+            courseInput.classList.add('is-invalid');
+            return false;
+        }
+
+        getLesson = async (courseId) => {
+            const url = `/get_lesson/${courseId}`;
+            
+            try {
+                const response = await fetch(url);
+                
+                if (response.status === 404) {
+                    return false;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data;
+
+            } catch (error) {
+                console.error('Error fetching lesson:', error);
+                return false;
+            }
+        }
     </script>
-</body>
-</html>
+{% endblock %}

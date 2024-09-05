@@ -8,10 +8,15 @@ bearer_token = None
 token_expiration_time = 0
 token_valid_time = 60 * 60
 
-def make_api_call(data):
+def get_personal_data():
     get_bearer_token()
-    print(bearer_token)
-    return enrollment_status(588070)
+
+    url = "https://schalter.asvz.ch/tn-api/api/MemberPerson"
+    headers = {"Authorization": f"Bearer {bearer_token}"}
+
+    response = requests.get(url, headers=headers)
+
+    return response
 
 
 def enrollment_status(lesson_id):
@@ -22,10 +27,7 @@ def enrollment_status(lesson_id):
 
     response = requests.get(url, headers=headers)
     
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return f'Failed to get enrollment status: {response.status_code}, {response.text}'
+    return response
 
 
 def enroll_in_lesson(lesson_id):
@@ -36,10 +38,7 @@ def enroll_in_lesson(lesson_id):
 
     response = requests.post(url, headers=headers)
 
-    if response.status_code == 201:
-        return response.json()
-    else:
-        return f'Failed to enroll: {response.status_code}, {response.text}'
+    return response
     
 
 def unenroll_from_lesson(lesson_id):
@@ -50,27 +49,21 @@ def unenroll_from_lesson(lesson_id):
 
     response = requests.delete(url, headers=headers)
 
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return f'Failed to unenroll: {response.status_code}, {response.text}'
+    return response
 
 
 def get_lessons(sport_id):
     url = f"https://asvz.ch/asvz_api/event_search?_format=json&limit=60&f[0]=sport:{sport_id}"
     response = requests.get(url)
 
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return f'Failed to get lessons: {response.status_code}, {response.text}'
+    return response
 
 
 def get_lesson(lesson_id):
     url = f"https://schalter.asvz.ch/tn-api/api/Lessons/{lesson_id}"
     response = requests.get(url)
 
-    return response.json()
+    return response
 
 
 def get_bearer_token():
@@ -222,45 +215,3 @@ def extract_request_verification_token(html):
         return token_value
     else:
         raise Exception("RequestVerificationTokent not found")
-    
-
-def inspect_response(response):
-# Check the status code
-    print("Status Code:", response.status_code)
-
-    # Check the response headers
-    print("\nHeaders:")
-    for key, value in response.headers.items():
-        print(f"{key}: {value}")
-
-    # Check the cookies
-    print("\nCookies:")
-    for cookie in response.cookies:
-        print(f"{cookie.name}: {cookie.value}")
-
-    # Check the response content in bytes
-    print("\nContent (in bytes):")
-    print(response.content)
-
-    # Check the response content as a string (decoded text)
-    print("\nContent (decoded):")
-    print(response.text)
-
-    # If the response is in JSON format, you can use the .json() method
-    try:
-        print("\nJSON Content:")
-        print(response.json())
-    except ValueError:
-        print("\nResponse is not in JSON format")
-
-    # Check the URL that was requested
-    print("\nURL:")
-    print(response.url)
-
-    # Check the history of redirects (if any)
-    if response.history:
-        print("\nRedirect History:")
-        for resp in response.history:
-            print(f"Status: {resp.status_code}, URL: {resp.url}")
-    else:
-        print("\nNo Redirect History")
