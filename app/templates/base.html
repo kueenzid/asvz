@@ -26,7 +26,12 @@
     </div>
     <nav class="navbar navbar-expand-lg navbar-light bg-white">
         <div class="container">
-            <a class="navbar-brand text-primary fw-bold fs-1 text" href="/">ASVZ HEHE</a>
+            <div>
+                <a class="navbar-brand text-primary fw-bold fs-1 text" href="/">ASVZ HEHE</a>
+
+                <a class="navbar-brand text-secondary fs-6 ms-2" href="{{ url_for('main.enrollments') }}">Enrollments</a>
+                <a class="navbar-brand text-secondary fs-6 ms-2" href="{{ url_for('main.scheduler') }}">Summary</a>
+            </div>
 
             <div class="d-flex justify-content-end">
                 {% if not logged_in %}
