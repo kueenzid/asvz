@@ -4,7 +4,7 @@
 
 {% block content %}
     <h1 class="text-center">Enroll into course</h1>
-    <input class="form-control" id="courseInput" placeholder="Enter course ID/Link">
+    <input class="form-control" id="courseInput" autofocus="autofocus" placeholder="Enter course ID/Link">
     <div id="course" class="container course-info" style="display: none;">
         <h1 class="text-center"><span id="courseTitle"></span><span id="statusBadge" class="badge text-bg-success" style="display: none;"></span></h1>
         <div class="row">
@@ -66,9 +66,9 @@
                 const enrolled = await enrollIntoCourse(currentCourseId);
                 if (enrolled) {
                     await updateEnrollStatus();
-                    alert('Successfully enrolled into the course!');
+                    activateToast('bg-success', enrolled);
                 } else {
-                    alert('Failed to enroll. Please try again later.');
+                    activateToast('bg-danger', 'Failed to enroll. Please try again later.');
                 }
             }
         });
@@ -78,12 +78,24 @@
                 const unenrolled = await unenrollFromCourse(currentCourseId);
                 if (unenrolled) {
                     await updateEnrollStatus();
-                    alert('Successfully unenrolled from the course!');
+                    activateToast('bg-success', unenrolled);
                 } else {
-                    alert('Failed to unenroll. Please try again later.');
+                    activateToast('bg-danger', 'Failed to unenroll. Please try again later.');
                 }
             }
         });
+
+        const activateToast = (style, message) => {
+            const liveToast = document.getElementById('toast');
+            const toastBody = document.getElementById('toastBody');
+            const toastBootstrap = bootstrap.Toast.getOrCreateInstance(liveToast);
+            liveToast.classList.remove('bg-info');
+            liveToast.classList.remove('bg-danger');
+            liveToast.classList.remove('bg-success');
+            liveToast.classList.add(style);
+            toastBody.innerText = message;
+            toastBootstrap.show();
+        };
 
         const updateEnrollStatus = async () => {
             const enrollmentStatus = await getEnrollmentStatus(currentCourseId);
@@ -138,7 +150,7 @@
                     return false;
                 }
 
-                return true;
+                return response.text();
             } catch (error) {
                 console.error('Error unenrolling from course:', error);
                 return false;
@@ -180,7 +192,7 @@
                     return false;
                 }
 
-                return true;
+                return response.text();
             } catch (error) {
                 console.error('Error enrolling into course:', error);
                 return false;

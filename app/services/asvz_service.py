@@ -7,16 +7,16 @@ def enroll(lesson_id):
     try:
         response = api_client.enroll_in_lesson(lesson_id)
         if response.status_code == 201:
-            return True, "Ok"
+            return True, "Successfully Enrolled!"
         elif response.status_code == 422:
             error_message = response.json()['errors'][0]['message']
             if error_message == "Der Anmeldebeginn liegt in der Zukunft - eine Anmeldung ist leider noch nicht möglich!":
                 if enrollment_scheduler.check_already_scheduled(lesson_id):
-                    return True, "Already Scheduled"
+                    return True, "The course is already scheduled!"
                 response = api_client.get_lesson(lesson_id)
                 enrollmentDateTime = response.json()['data']['enrollmentFrom']
                 enrollment_scheduler.schedule_enrollment(lesson_id, parser.parse(enrollmentDateTime))
-                return True, "Scheduled"
+                return True, "Scheduled Enrollment!"
             elif error_message == "Das Angebot ist schon ausgebucht.":
                 return False, "Full"
         else:
@@ -32,7 +32,7 @@ def unenroll(lesson_id):
         
         response = api_client.unenroll_from_lesson(lesson_id)
         if response.status_code == 200:
-            return True, "Ok"
+            return True, "Successfully Unenrolled!"
         else:
             return False, "Error " + str(response.status_code)
     except Exception as e:
