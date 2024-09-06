@@ -16,6 +16,10 @@ def schedule_enrollment(lesson_id, date):
     date = date + timedelta(seconds=30)
     refreshTokenScheduler.add_job(get_bearer_token, 'date', run_date=date, id="refresh_token_for_" + str(lesson_id))
 
+def remove_scheduled_enrollment(lesson_id):
+    scheduler.remove_job(str(lesson_id))
+    refreshTokenScheduler.remove_job("refresh_token_for_" + str(lesson_id))
+
 def remove_job(job_id):
     scheduler.remove_job(job_id)
 

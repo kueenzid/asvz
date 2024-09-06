@@ -6,7 +6,7 @@
     <h1 class="text-center">Enroll into course</h1>
     <input class="form-control" id="courseInput" placeholder="Enter course ID/Link">
     <div id="course" class="container course-info" style="display: none;">
-        <h1 class="text-center"><span id="courseTitle"></span><span id="enrolledBadge" class="badge text-bg-success" style="display: none;">Enrolled</span></h1>
+        <h1 class="text-center"><span id="courseTitle"></span><span id="statusBadge" class="badge text-bg-success" style="display: none;"></span></h1>
         <div class="row">
             <div class="col-md-6">
                 <p><span class="info-label">Time:</span> <span id="time"></span></p>
@@ -88,16 +88,43 @@
         const updateEnrollStatus = async () => {
             const enrollmentStatus = await getEnrollmentStatus(currentCourseId);
                 currentEnrollmentStatus = enrollmentStatus;
-                if (currentEnrollmentStatus == "4 - definitiv") {
+                if (currentEnrollmentStatus == "Canceled") {
+                    document.getElementById('enrollButtonRow').style.display = 'none';
+                    document.getElementById('unenrollButtonRow').style.display = 'none';
+                    adjustStatusBadge('text-bg-danger', 'Canceled');
+                } else if (currentEnrollmentStatus == "Enrolled") {
                     document.getElementById('enrollButtonRow').style.display = 'none';
                     document.getElementById('unenrollButtonRow').style.display = 'block';
-                    document.getElementById('enrolledBadge').style.display = 'inline';
+                    adjustStatusBadge('text-bg-success', 'Enrolled');
+                } else if (currentEnrollmentStatus == "Scheduled") {
+                    document.getElementById('enrollButtonRow').style.display = 'none';
+                    document.getElementById('unenrollButtonRow').style.display = 'block';
+                    adjustStatusBadge('text-bg-info', 'Scheduled');
+                } else if (currentEnrollmentStatus == "Expired") {
+                    document.getElementById('enrollButtonRow').style.display = 'none';
+                    document.getElementById('unenrollButtonRow').style.display = 'none';
+                    adjustStatusBadge('text-bg-warning', 'Expired');
+                } else if (currentEnrollmentStatus == "Full") {
+                    document.getElementById('unenrollButtonRow').style.display = 'none';
+                    document.getElementById('enrollButtonRow').style.display = 'none';
+                    adjustStatusBadge('text-bg-danger', 'Full');
                 } else {
                     document.getElementById('unenrollButtonRow').style.display = 'none';
                     document.getElementById('enrollButtonRow').style.display = 'block';
-                    document.getElementById('enrolledBadge').style.display = 'none';
+                    document.getElementById('statusBadge').style.display = 'none';
                 }
         };
+
+        const adjustStatusBadge = (style, text) => {
+            let statusBadge = document.getElementById('statusBadge');
+            statusBadge.style.display = 'inline';
+            statusBadge.classList.remove('text-bg-success');
+            statusBadge.classList.remove('text-bg-danger');
+            statusBadge.classList.remove('text-bg-info');
+            statusBadge.classList.remove('text-bg-warning');
+            statusBadge.classList.add(style);
+            statusBadge.innerText = text;
+        }
 
         const unenrollFromCourse = async (courseId) => {
             const url = `/unenroll/${courseId}`;
@@ -119,7 +146,7 @@
         };
 
         const getEnrollmentStatus = async (courseId) => {
-            const url = `/my_enrollment/${courseId}`;
+            const url = `/status/${courseId}`;
             
             try {
                 const response = await fetch(url);

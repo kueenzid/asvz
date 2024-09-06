@@ -1,6 +1,7 @@
 from app.services import api_client
 from app.services import enrollment_scheduler
 from dateutil import parser
+from datetime import datetime
 
 def enroll(lesson_id):
     try:
@@ -25,6 +26,10 @@ def enroll(lesson_id):
     
 def unenroll(lesson_id):
     try:
+        if enrollment_scheduler.check_already_scheduled(lesson_id):
+            enrollment_scheduler.remove_scheduled_enrollment(lesson_id)
+            return True, "Scheduled Enrollment Removed"
+        
         response = api_client.unenroll_from_lesson(lesson_id)
         if response.status_code == 200:
             return True, "Ok"
@@ -94,6 +99,27 @@ def get_scheduled_courses():
     
     return courses
 
+def status(lesson_id):
+    courseResponse = api_client.get_lesson(lesson_id)
+    if courseResponse.status_code == 200:
+        courseData = courseResponse.json()['data']
+        if courseData['cancellationDate'] != None:
+            return "Canceled", 200
+        response = api_client.enrollment_status(lesson_id)
+        if response.status_code == 200:
+            data = response.json()['data']['status']
+            if data == 4:
+                return "Enrolled", 200
+        if enrollment_scheduler.check_already_scheduled(lesson_id):
+            return "Scheduled", 200
+        enrollment_until = parser.parse(courseData['enrollmentUntil'])
+        if datetime.now(enrollment_until.tzinfo) > enrollment_until:
+            return "Expired", 200
+        if courseData['participantsMax'] == courseData['participantCount']:
+            return "Full", 200
+        return "Not Full", 200
+    else:
+        return "Not Found", 404
 
 def inspect_response(response):
 # Check the status code

@@ -34,6 +34,10 @@ def unenroll(id):
 def my_enrollment(id):
     return asvz_service.enrollment(id)
 
+@bp.route('/status/<int:id>')
+def status(id):
+    return asvz_service.status(id)
+
 @bp.route('/enrollments')
 def enrollments():
     return render_template('enrollments.html')
