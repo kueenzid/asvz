@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, redirect, render_template, request, jsonify, url_for
 from app.services import asvz_service
 
 bp = Blueprint('main', __name__)
@@ -7,12 +7,17 @@ bp = Blueprint('main', __name__)
 def index():
     return render_template('index.html')
 
-# TODO: Implement the login route
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
+    error_message = None
     if request.method == 'POST':
-        print(request.form)
-    return render_template('login.html')
+        result = asvz_service.loginAndStoreCreds(request.form['username'], request.form['password'])
+        if result[1] == 200:
+            return redirect(url_for('main.index'))
+        else:
+            error_message = "Invalid username or password. Please try again."
+
+    return render_template('login.html', error_message=error_message)
 
 @bp.route('/enroll/<int:id>')
 def enroll(id):

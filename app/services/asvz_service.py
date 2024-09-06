@@ -2,6 +2,14 @@ from app.services import api_client
 from app.services import enrollment_scheduler
 from dateutil import parser
 from datetime import datetime
+from config import Config
+
+def loginAndStoreCreds(username, password):
+    Config.update_credentials(username, password)
+    if me():
+        return "Login successful!", 200
+    else:
+        return "Login failed!", 500
 
 def enroll(lesson_id):
     try:

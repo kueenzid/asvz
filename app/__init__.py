@@ -1,11 +1,11 @@
 from flask import Flask
 from app.services.enrollment_scheduler import scheduler, refreshTokenScheduler
+from config import Config
 
 def create_app():
     app = Flask(__name__, static_folder='../static')
     
-    # Load configuration
-    app.config.from_object('config.Config')
+    Config.load_credentials()
 
     # Register routes
     with app.app_context():
