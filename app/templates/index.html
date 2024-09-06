@@ -51,7 +51,7 @@
 
                 document.getElementById('course').style.display = 'block';
                 
-                document.getElementById('courseTitle').innerText = courseData.data.title + " ";
+                document.getElementById('courseTitle').innerText = courseData.data.sportName + " | " + courseData.data.title + " ";
                 document.getElementById('time').innerText = fromToDateFormat(courseData.data.starts, courseData.data.ends);
                 document.getElementById('enrollmentFrom').innerText = new Date(courseData.data.enrollmentFrom).toLocaleString(dateFormatLocation, dateFormatOptions);
                 document.getElementById('facilitiesName').innerText = courseData.data.facilities.map(facility => facility.name).join(', ');

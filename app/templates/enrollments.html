@@ -83,7 +83,7 @@
               const courseTitleCell = document.createElement('td');
               const courseLink = document.createElement('a');
               courseLink.href = createLinkToASVZ(course.lessonId);
-              courseLink.textContent = course.lessonName;
+              courseLink.textContent = course.sportName + " | " +course.lessonName;
               courseLink.target = "_blank";
               courseLink.rel = "noopener noreferrer";
               courseTitleCell.appendChild(courseLink);

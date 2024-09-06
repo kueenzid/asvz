@@ -1,5 +1,5 @@
 from flask import Flask
-from app.services.enrollment_scheduler import scheduler
+from app.services.enrollment_scheduler import scheduler, refreshTokenScheduler
 
 def create_app():
     app = Flask(__name__, static_folder='../static')
@@ -14,5 +14,6 @@ def create_app():
 
     # Start scheduler
     scheduler.start()
+    refreshTokenScheduler.start()
 
     return app
