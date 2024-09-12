@@ -118,9 +118,14 @@
                     adjustStatusBadge('text-bg-warning', 'Expired');
                 } else if (currentEnrollmentStatus == "Full") {
                     document.getElementById('unenrollButtonRow').style.display = 'none';
-                    document.getElementById('enrollButtonRow').style.display = 'none';
+                    document.getElementById('enrollButtonRow').style.display = 'block';
                     adjustStatusBadge('text-bg-danger', 'Full');
-                } else {
+                } else if (currentEnrollmentStatus == "Still Trying") {
+                    document.getElementById('unenrollButtonRow').style.display = 'block';
+                    document.getElementById('enrollButtonRow').style.display = 'none';
+                    adjustStatusBadge('text-bg-warning', 'Still Trying');
+                }
+                else {
                     document.getElementById('unenrollButtonRow').style.display = 'none';
                     document.getElementById('enrollButtonRow').style.display = 'block';
                     document.getElementById('statusBadge').style.display = 'none';
