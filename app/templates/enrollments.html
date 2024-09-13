@@ -3,125 +3,196 @@
 {% block title %}Enrollments{% endblock %}
 
 {% block content %}
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <table class="table table-striped table-hover">
-              <thead>
-                <tr>
-                  <th scope="col">Title</th>
-                  <th scope="col">Time</th>
-                  <th scope="col">Location</th>
-                  <th scope="col">Course ID</th>
-                  <th scope="col">Status</th>
-                </tr>
-              </thead>
-              <tbody id="courses-tbody" class="table-group-divider">
-                <tr class="placeholder-row" style="opacity: 1;">
-                  <td colspan="5">
-                    <div class="placeholder-glow">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                  </td>
-                </tr>
-                <tr class="placeholder-row" style="opacity: 0.8;">
-                  <td colspan="5">
-                    <div class="placeholder-glow">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                  </td>
-                </tr>
-                <tr class="placeholder-row" style="opacity: 0.6;">
-                  <td colspan="5">
-                    <div class="placeholder-glow">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                  </td>
-                </tr>
-                <tr class="placeholder-row" style="opacity: 0.4;">
-                  <td colspan="5">
-                    <div class="placeholder-glow">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                  </td>
-                </tr>
-                <tr class="placeholder-row" style="opacity: 0.2;">
-                  <td colspan="5">
-                    <div class="placeholder-glow">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-        </div>
-    </div>
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th scope="col" data-sort="title">Title</th>
+          <th scope="col" data-sort="time">Time</th>
+          <th scope="col" data-sort="location">Location</th>
+          <th scope="col">Course ID</th>
+          <th scope="col" data-sort="status">Status</th>
+        </tr>
+      </thead>
+      <tbody id="courses-tbody" class="table-group-divider">
+        <tr class="placeholder-row" style="opacity: 1;">
+          <td colspan="5">
+            <div class="placeholder-glow">
+              <span class="placeholder col-12"></span>
+            </div>
+          </td>
+        </tr>
+        <tr class="placeholder-row" style="opacity: 0.8;">
+          <td colspan="5">
+            <div class="placeholder-glow">
+              <span class="placeholder col-12"></span>
+            </div>
+          </td>
+        </tr>
+        <tr class="placeholder-row" style="opacity: 0.6;">
+          <td colspan="5">
+            <div class="placeholder-glow">
+              <span class="placeholder col-12"></span>
+            </div>
+          </td>
+        </tr>
+        <tr class="placeholder-row" style="opacity: 0.4;">
+          <td colspan="5">
+            <div class="placeholder-glow">
+              <span class="placeholder col-12"></span>
+            </div>
+          </td>
+        </tr>
+        <tr class="placeholder-row" style="opacity: 0.2;">
+          <td colspan="5">
+            <div class="placeholder-glow">
+              <span class="placeholder col-12"></span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
-    <script>
-        document.addEventListener('DOMContentLoaded', async function () {
-          const placeholderRows = document.querySelectorAll('.placeholder-row');
-          placeholderRows.forEach(row => row.remove());
+<script>
+  document.addEventListener('DOMContentLoaded', async function () {
+    const placeholderRows = document.querySelectorAll('.placeholder-row');
+    placeholderRows.forEach(row => row.remove());
 
-          let enrollments = await getEnrolledCourses();
-          const scheduledCourses = await getSchedueldCourses();
+    let enrollments = await getEnrolledCourses();
+    const scheduledCourses = await getSchedueldCourses();
 
-          enrollments = enrollments.concat(scheduledCourses);
+    enrollments = enrollments.concat(scheduledCourses);
 
-          const tbody = document.getElementById('courses-tbody');
+    const tbody = document.getElementById('courses-tbody');
 
-          if (enrollments.length === 0 && scheduledCourses.length === 0) {
-            const row = document.createElement('tr');
-            const cell = document.createElement('td');
-            cell.colSpan = 5;
-            cell.textContent = 'No enrollments found.';
-            row.appendChild(cell);
-            tbody.appendChild(row);
-          } else {
-            enrollments.forEach(course => {
-              const row = document.createElement('tr');
-              const courseTitleCell = document.createElement('td');
-              const courseLink = document.createElement('a');
-              courseLink.href = createLinkToASVZ(course.lessonId);
-              courseLink.textContent = course.sportName + " | " +course.lessonName;
-              courseLink.target = "_blank";
-              courseLink.rel = "noopener noreferrer";
-              courseTitleCell.appendChild(courseLink);
-              row.appendChild(courseTitleCell);
+    if (enrollments.length === 0 && scheduledCourses.length === 0) {
+      const row = document.createElement('tr');
+      const cell = document.createElement('td');
+      cell.colSpan = 5;
+      cell.textContent = 'No enrollments found.';
+      row.appendChild(cell);
+      tbody.appendChild(row);
+    } else {
+      enrollments.forEach(course => {
+        const row = document.createElement('tr');
+        const courseTitleCell = document.createElement('td');
+        const courseLink = document.createElement('a');
+        courseLink.href = createLinkToASVZ(course.lessonId);
+        courseLink.textContent = course.sportName + " | " + course.lessonName;
+        courseLink.target = "_blank";
+        courseLink.rel = "noopener noreferrer";
+        courseTitleCell.appendChild(courseLink);
+        row.appendChild(courseTitleCell);
 
-              const timeCell = document.createElement('td');
-              timeCell.textContent = fromToDateFormat(course.lessonStart, course.lessonEnd);
-              row.appendChild(timeCell);
+        const timeCell = document.createElement('td');
+        timeCell.textContent = fromToDateFormat(course.lessonStart, course.lessonEnd);
+        row.appendChild(timeCell);
 
-              const locationCell = document.createElement('td');
-              locationCell.textContent = course.location;
-              row.appendChild(locationCell);
+        const locationCell = document.createElement('td');
+        locationCell.textContent = course.location;
+        row.appendChild(locationCell);
 
-              const courseIdCell = document.createElement('td');
-              courseIdCell.textContent = course.lessonId;
-              row.appendChild(courseIdCell);
+        const courseIdCell = document.createElement('td');
+        courseIdCell.textContent = course.lessonId;
+        row.appendChild(courseIdCell);
 
-              const enrollmentStatusCell = document.createElement('td');
-              enrollmentStatusCell.textContent = course.status;
-              row.appendChild(enrollmentStatusCell);
+        const enrollmentStatusCell = document.createElement('td');
+        enrollmentStatusCell.textContent = course.status;
+        row.appendChild(enrollmentStatusCell);
 
-              tbody.appendChild(row);
-          });
-          }
-        });
+        tbody.appendChild(row);
+      });
+    }
 
-        const getEnrolledCourses = async () => {
-          const response = await fetch('/get_enrollments')
-          return await response.json()
-        }
+    const headers = document.querySelectorAll('th[data-sort]');
+    headers.forEach(header => {
+      header.addEventListener('click', function () {
+        const column = this.getAttribute('data-sort');
+        sortTable(column);
+        updateSortIcons(this);
+      });
+    });
+  });
 
-        const getSchedueldCourses = async () => {
-          const response = await fetch('/get_scheduled_courses')
-          return await response.json()
-        }
+  let currentSortColumn = '';
+  let sortAscending = true;
 
-        const createLinkToASVZ = (courseId) => {
-          return `https://schalter.asvz.ch/tn/lessons/${courseId}`;
-        }
-    </script>
+  function sortTable(column) {
+    const tbody = document.getElementById('courses-tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    if (currentSortColumn === column) {
+      sortAscending = !sortAscending;
+    } else {
+      sortAscending = true;
+    }
+    currentSortColumn = column;
+
+    rows.sort((a, b) => {
+      let aValue = a.querySelector(`td:nth-child(${getColumnIndex(column)})`).textContent.trim();
+      let bValue = b.querySelector(`td:nth-child(${getColumnIndex(column)})`).textContent.trim();
+
+      if (column === 'time') {
+        aValue = new Date(aValue.split(' - ')[0]);
+        bValue = new Date(bValue.split(' - ')[0]);
+      }
+
+      if (aValue > bValue) return sortAscending ? 1 : -1;
+      if (aValue < bValue) return sortAscending ? -1 : 1;
+      return 0;
+    });
+
+    tbody.innerHTML = '';
+    rows.forEach(row => tbody.appendChild(row));
+  }
+
+  function getColumnIndex(column) {
+    switch (column) {
+      case 'title': return 1;
+      case 'time': return 2;
+      case 'location': return 3;
+      case 'status': return 5;
+      default: return 1;
+    }
+  }
+
+  function updateSortIcons(activeHeader) {
+    const headers = document.querySelectorAll('th[data-sort]');
+    headers.forEach(header => {
+      header.textContent = header.getAttribute('data-label');
+    });
+
+    const arrow = sortAscending ? ' ↑' : ' ↓';
+    activeHeader.textContent = activeHeader.getAttribute('data-label') + arrow;
+  }
+
+  document.querySelectorAll('th[data-sort]').forEach(header => {
+    header.setAttribute('data-label', header.textContent);
+  });
+
+  const getEnrolledCourses = async () => {
+    const response = await fetch('/get_enrollments');
+    data = await response.json();
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].status === 4) {
+        data[i].status = 'Enrolled';
+      }
+    }
+    return data;
+  }
+
+  const getSchedueldCourses = async () => {
+    const response = await fetch('/get_scheduled_courses');
+    return await response.json();
+  }
+
+  const createLinkToASVZ = (courseId) => {
+    return `https://schalter.asvz.ch/tn/lessons/${courseId}`;
+  }
+</script>
 {% endblock %}

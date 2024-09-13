@@ -13,6 +13,8 @@
                 <p id="failure"></p>
                 <h3>Success:</h3>
                 <p id="success"></p>
+                <h3>Still Trying</h3>
+                <p id="still_trying"></p>
             </div>
 {% endblock %}
 
@@ -30,6 +32,9 @@
             }
             if (data.success !== undefined){
                 document.getElementById('success').innerText = data.success.length;
+            }
+            if (data.still_trying !== undefined){
+                document.getElementById('still_trying').innerText = data.still_trying.length;
             }
         });
     </script>
