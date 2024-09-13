@@ -23,6 +23,7 @@ def enrollSpam(lesson_id):
         tries += 1
         response = enroll(lesson_id)
         if response.status_code == 201:
+            print("Successfully enrolled in lesson", lesson_id, "at ", datetime.now())
             success.append(lesson_id)
             return
         else:
