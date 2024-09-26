@@ -12,11 +12,10 @@ const = check_course_interval = 10
 
 
 def schedule_enrollment(lesson_id, date):
-    date = date - timedelta(seconds=0.4)
     scheduler.add_job(
         enroll, "date", run_date=date, args=[lesson_id], id=str(lesson_id)
     )
-    date = date + timedelta(seconds=30)
+    date = date - timedelta(seconds=30)
     refreshTokenScheduler.add_job(
         get_bearer_token,
         "date",
