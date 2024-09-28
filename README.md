@@ -37,3 +37,7 @@
     ```bash
     python run.py
     ```
+
+5. **Access application**
+    The application runs on port 5000.
+    Find the IP of your server and access the application on `http://<ip>:5000/`
