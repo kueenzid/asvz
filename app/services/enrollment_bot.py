@@ -5,7 +5,7 @@ from app.services import api_client
 from dateutil import parser
 from app.services.logger import setup_logger
 
-logger = setup_logger('enrollment_bot_logger', 'enrollment_bot')
+logger = setup_logger("enrollment_bot_logger", "enrollment_bot")
 
 max_tries = 5
 delay = 0.2  # s
@@ -15,10 +15,7 @@ failure = []
 
 
 def enrollSpam(lesson_id):
-    logger.info(
-        "Starting enrollment spam for lesson %s",
-        lesson_id
-    )
+    logger.info("Starting enrollment spam for lesson %s", lesson_id)
     tries = 0
     while tries < max_tries:
         tries += 1
@@ -54,7 +51,9 @@ def try_enrollment(lesson_id):
     cancelation_deadline = parser.parse(data["data"]["cancelationUntil"])
     if datetime.now(cancelation_deadline.tzinfo) > cancelation_deadline:
         still_trying.remove(lesson_id)
-        logger.info("Removed lesson %s from still_trying because it is expired", lesson_id)
+        logger.info(
+            "Removed lesson %s from still_trying because it is expired", lesson_id
+        )
         return False
 
     response = enroll(lesson_id)
@@ -66,7 +65,6 @@ def try_enrollment(lesson_id):
 
 
 def try_enrollment_for_still_trying():
-    logger.info("Trying to enroll into full lessons")
     random_delay = random.randint(20, 60)
     time.sleep(random_delay)
     for lesson_id in still_trying:
