@@ -81,10 +81,10 @@ def get_lesson(lesson_id):
 
 
 def get_bearer_token():
-    logger.info("Getting bearer token")
     global bearer_token, token_expiration_time
 
     if not is_token_valid():
+        logger.info("Getting bearer token")
         url = "https://auth.asvz.ch/Account/Login"
         response = requests.get(url)
 
