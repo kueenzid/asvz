@@ -3,12 +3,17 @@ import time
 import requests
 import secrets
 from config import Config
+from app.services.logger import setup_logger
+
+logger = setup_logger("api_client_logger", "api_client")
 
 bearer_token = None
 token_expiration_time = 0
 token_valid_time = 60 * 60
 
+
 def get_personal_data():
+    logger.info("Getting personal data")
     get_bearer_token()
 
     url = "https://schalter.asvz.ch/tn-api/api/MemberPerson"
@@ -20,6 +25,7 @@ def get_personal_data():
 
 
 def my_enrollments():
+    logger.info("Getting my enrollments")
     get_bearer_token()
 
     url = "https://schalter.asvz.ch/tn-api/api/Enrollments"
@@ -31,17 +37,19 @@ def my_enrollments():
 
 
 def enrollment_status(lesson_id):
+    logger.info("Getting enrollment status for lesson %s", lesson_id)
     get_bearer_token()
 
     url = f"https://schalter.asvz.ch/tn-api/api/Lessons/{lesson_id}/MyEnrollment"
     headers = {"Authorization": f"Bearer {bearer_token}"}
 
     response = requests.get(url, headers=headers)
-    
+
     return response
 
 
 def enroll_in_lesson(lesson_id):
+    logger.info("Enrolling in lesson %s", lesson_id)
     get_bearer_token()
 
     url = f"https://schalter.asvz.ch/tn-api/api/Lessons/{lesson_id}/Enrollment"
@@ -50,9 +58,10 @@ def enroll_in_lesson(lesson_id):
     response = requests.post(url, headers=headers)
 
     return response
-    
+
 
 def unenroll_from_lesson(lesson_id):
+    logger.info("Unenrolling from lesson %s", lesson_id)
     get_bearer_token()
 
     url = f"https://schalter.asvz.ch/tn-api/api/Lessons/{lesson_id}/Enrollment"
@@ -64,6 +73,7 @@ def unenroll_from_lesson(lesson_id):
 
 
 def get_lesson(lesson_id):
+    logger.info("Getting lesson %s", lesson_id)
     url = f"https://schalter.asvz.ch/tn-api/api/Lessons/{lesson_id}"
     response = requests.get(url)
 
@@ -71,30 +81,35 @@ def get_lesson(lesson_id):
 
 
 def get_bearer_token():
+    logger.info("Getting bearer token")
     global bearer_token, token_expiration_time
 
     if not is_token_valid():
         url = "https://auth.asvz.ch/Account/Login"
         response = requests.get(url)
-        
+
         if response.status_code != 200:
             raise Exception("Failed to get login page")
 
         requestVerificationToken = extract_request_verification_token(response.text)
-        antiForgeryCookieName, antiForgeryCookieToken = extract_anti_forgery_token(response.cookies)
+        antiForgeryCookieName, antiForgeryCookieToken = extract_anti_forgery_token(
+            response.cookies
+        )
 
-        data, headers = prepare_login_request(requestVerificationToken, antiForgeryCookieName, antiForgeryCookieToken)
+        data, headers = prepare_login_request(
+            requestVerificationToken, antiForgeryCookieName, antiForgeryCookieToken
+        )
         new_token = login(data, headers, antiForgeryCookieName, antiForgeryCookieToken)
 
         token_expiration_time = time.time() + token_valid_time
         bearer_token = new_token
-    
+
     return bearer_token
 
 
 def is_token_valid():
     return bearer_token is not None and time.time() < token_expiration_time
-    
+
 
 def login(data, headers, antiForgeryCookieName, antiForgeryCookieToken):
     url = "https://auth.asvz.ch/Account/Login"
@@ -102,10 +117,21 @@ def login(data, headers, antiForgeryCookieName, antiForgeryCookieToken):
     if response.status_code != 302:
         raise Exception("Failed to login")
 
-    idscrvSessionCookieName, idscrvSessionCookieToken = extract_idscrv_session_cookie(response.cookies)
-    identityApplicationCookieName, identityApplicationCookieToken = extract_identity_application_cookie(response.cookies)
+    idscrvSessionCookieName, idscrvSessionCookieToken = extract_idscrv_session_cookie(
+        response.cookies
+    )
+    identityApplicationCookieName, identityApplicationCookieToken = (
+        extract_identity_application_cookie(response.cookies)
+    )
 
-    headers = prepare_authorize_request(idscrvSessionCookieName, idscrvSessionCookieToken, identityApplicationCookieName, identityApplicationCookieToken, antiForgeryCookieName, antiForgeryCookieToken)
+    headers = prepare_authorize_request(
+        idscrvSessionCookieName,
+        idscrvSessionCookieToken,
+        identityApplicationCookieName,
+        identityApplicationCookieToken,
+        antiForgeryCookieName,
+        antiForgeryCookieToken,
+    )
 
     return authorize(headers)
 
@@ -126,8 +152,8 @@ def authorize(headers):
 
 
 def extract_access_token(location):
-    match = re.search(r'access_token=([^&]+)', location)
-    
+    match = re.search(r"access_token=([^&]+)", location)
+
     if match:
         access_token = match.group(1)
         return access_token
@@ -135,7 +161,14 @@ def extract_access_token(location):
         raise Exception("access_token not found")
 
 
-def prepare_authorize_request(idscrvSessionCookieName, idscrvSessionCookieToken, identityApplicationCookieName, identityApplicationCookieToken, antiForgeryCookieName, antiForgeryCookieToken):
+def prepare_authorize_request(
+    idscrvSessionCookieName,
+    idscrvSessionCookieToken,
+    identityApplicationCookieName,
+    identityApplicationCookieToken,
+    antiForgeryCookieName,
+    antiForgeryCookieToken,
+):
     headers = {
         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
         "accept-language": "en-US,en;q=0.9,de-CH;q=0.8,de;q=0.7",
@@ -151,7 +184,7 @@ def prepare_authorize_request(idscrvSessionCookieName, idscrvSessionCookieToken,
         "sec-fetch-mode": "navigate",
         "sec-fetch-site": "same-site",
         "upgrade-insecure-requests": "1",
-        "user-agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36"
+        "user-agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36",
     }
 
     return headers
@@ -161,7 +194,7 @@ def extract_identity_application_cookie(cookies):
     for cookie in cookies:
         if cookie.name == ".AspNetCore.Identity.Application":
             return cookie.name, cookie.value
-        
+
     raise Exception("Identity Application cookie not found")
 
 
@@ -169,7 +202,7 @@ def extract_idscrv_session_cookie(cookies):
     for cookie in cookies:
         if cookie.name == "idsrv.session":
             return cookie.name, cookie.value
-        
+
     raise Exception("idsrv Session cookie not found")
 
 
@@ -177,11 +210,13 @@ def extract_anti_forgery_token(cookies):
     for cookie in cookies:
         if cookie.name == ".AspNetCore.Antiforgery.MkeJ4WI3ssE":
             return cookie.name, cookie.value
-        
+
     raise Exception("AntiForgery token not found")
 
 
-def prepare_login_request(requestVerificationToken, antiForgeryCookieName, antiForgeryCookieToken):
+def prepare_login_request(
+    requestVerificationToken, antiForgeryCookieName, antiForgeryCookieToken
+):
     data = {
         "AsvzId": Config.USERNAME,
         "Password": Config.PASSWORD,
@@ -206,14 +241,17 @@ def prepare_login_request(requestVerificationToken, antiForgeryCookieName, antiF
         "sec-fetch-site": "same-origin",
         "sec-fetch-user": "?1",
         "upgrade-insecure-requests": "1",
-        "user-agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36"
+        "user-agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36",
     }
 
     return data, headers
 
 
 def extract_request_verification_token(html):
-    match = re.search(r'<input\s+name="__RequestVerificationToken"\s+type="hidden"\s+value="([^"]+)"', html)
+    match = re.search(
+        r'<input\s+name="__RequestVerificationToken"\s+type="hidden"\s+value="([^"]+)"',
+        html,
+    )
     if match:
         token_value = match.group(1)
         return token_value
