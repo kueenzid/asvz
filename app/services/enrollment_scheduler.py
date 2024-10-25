@@ -12,7 +12,7 @@ logger = setup_logger("enrollment_scheduler_logger", "enrollment_scheduler")
 
 scheduler = BackgroundScheduler()
 refreshTokenScheduler = BackgroundScheduler()
-check_course_interval = 10
+check_course_interval = 1
 
 
 def schedule_enrollment(lesson_id, date):
@@ -35,7 +35,7 @@ def schedule_missed_enrollment():
     refreshTokenScheduler.add_job(
         try_enrollment_for_still_trying,
         "interval",
-        minutes=check_course_interval,
+        seconds=check_course_interval,
         id="scheduler_for_still_trying",
     )
 
