@@ -1,4 +1,3 @@
-from math import log
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import timedelta
 from app.services.enrollment_bot import success, try_enrollment_for_still_trying

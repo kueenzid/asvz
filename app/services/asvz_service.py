@@ -95,7 +95,7 @@ def me():
         response = api_client.get_personal_data()
         if response.status_code == 200:
             return response.json()["firstName"]
-    except Exception as e:
+    except Exception:
         return False
 
 
@@ -104,7 +104,7 @@ def get_enrollments():
         response = api_client.my_enrollments()
         if response.status_code == 200:
             return response.json()
-    except Exception as e:
+    except Exception:
         return False
 
 
@@ -144,7 +144,7 @@ def status(lesson_id):
     courseResponse = api_client.get_lesson(lesson_id)
     if courseResponse.status_code == 200:
         courseData = courseResponse.json()["data"]
-        if courseData["cancellationDate"] != None:
+        if courseData["cancellationDate"] is not None:
             return "Canceled", 200
         response = api_client.enrollment_status(lesson_id)
         if response.status_code == 200:
