@@ -11,7 +11,7 @@ logger = setup_logger("enrollment_scheduler_logger", "enrollment_scheduler")
 
 scheduler = BackgroundScheduler()
 refreshTokenScheduler = BackgroundScheduler()
-check_course_interval = 1
+check_course_interval = 60
 
 
 def schedule_enrollment(lesson_id, date):
